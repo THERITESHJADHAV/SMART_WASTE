@@ -65,15 +65,23 @@ export default function EWasteCenters() {
     }
   };
 
-  const ewasteIcon = {
-    url: 'https://cdn-icons-png.flaticon.com/512/3299/3299955.png', // Recycle pin icon
-    scaledSize: window.google?.maps?.Size ? new window.google.maps.Size(32, 32) : null,
-  };
+  const getUserMarkerIcon = () => ({
+    path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
+    fillColor: '#3b82f6', // Bright Blue for user
+    fillOpacity: 1,
+    strokeWeight: 2,
+    strokeColor: '#ffffff',
+    scale: 14,
+  });
 
-  const userIcon = {
-    url: 'https://cdn-icons-png.flaticon.com/512/3082/3082161.png', // User location pin
-    scaledSize: window.google?.maps?.Size ? new window.google.maps.Size(32, 32) : null,
-  };
+  const getEWasteMarkerIcon = () => ({
+    path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
+    fillColor: '#10b981', // Emerald Green for recycling centers
+    fillOpacity: 0.9,
+    strokeWeight: 2,
+    strokeColor: '#ffffff',
+    scale: 14,
+  });
 
   if (loadingData) {
     return (
@@ -114,7 +122,9 @@ export default function EWasteCenters() {
             >
               <div className="flex items-start justify-between mb-2 pb-2 border-b-2 border-dashed border-gray-200">
                 <h3 className="text-sm font-extrabold text-[#121212] uppercase flex items-center gap-1.5 leading-tight">
-                  <MdRecycling className="text-[#10b981] shrink-0" size={20} />
+                  <div className="w-5 h-5 rounded-full bg-[#10b981] text-white flex items-center justify-center text-[10px] border border-black shrink-0">
+                    {i + 1}
+                  </div>
                   <span className="line-clamp-1">{center.name}</span>
                 </h3>
                 {center.distance !== undefined && (
@@ -173,8 +183,12 @@ export default function EWasteCenters() {
               {/* User location marker */}
               <Marker 
                 position={userLocation} 
-                icon={userIcon.scaledSize ? userIcon : undefined} 
+                icon={getUserMarkerIcon()} 
                 title="Your Location"
+                label={{
+                  text: '⭐',
+                  fontSize: '12px'
+                }}
               />
 
               {/* E-waste center markers */}
@@ -182,7 +196,13 @@ export default function EWasteCenters() {
                 <Marker
                   key={i}
                   position={{ lat: center.location.lat, lng: center.location.lng }}
-                  icon={ewasteIcon.scaledSize ? ewasteIcon : undefined}
+                  icon={getEWasteMarkerIcon()}
+                  label={{
+                    text: String(i + 1),
+                    color: 'white',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}
                   onClick={() => {
                     setSelectedCenter(center);
                     setActiveMarker(center._id);
