@@ -71,17 +71,14 @@ export default function MapVisualization() {
   };
 
   const getMarkerIcon = (level) => {
-    const color = levelColors[level] || '#9ca3af';
-    // SVG circle pin
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" stroke="#121212" stroke-width="2">
-        <circle cx="12" cy="12" r="8" />
-      </svg>
-    `;
+    const color = level === 'High' ? '#ef4444' : level === 'Medium' ? '#f59e0b' : '#10b981';
     return {
-      url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-      scaledSize: new window.google.maps.Size(level === 'High' ? 28 : level === 'Medium' ? 24 : 20),
-      anchor: new window.google.maps.Point(12, 12),
+      path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
+      fillColor: color,
+      fillOpacity: 0.9,
+      strokeWeight: 2,
+      strokeColor: '#ffffff',
+      scale: 14 // Radius size
     };
   };
 
@@ -154,14 +151,32 @@ export default function MapVisualization() {
               />
 
               {/* Waste location markers */}
-              {wasteData.map((waste, i) => (
-                <Marker
-                  key={i}
-                  position={{ lat: waste.location.lat, lng: waste.location.lng }}
-                  icon={getMarkerIcon(waste.wasteLevel)}
-                  onClick={() => setSelectedWaste(waste)}
-                />
-              ))}
+              {wasteData.map((waste, i) => {
+                // Determine order number if optimized route exists
+                let orderNum = i + 1;
+                if (routeData) {
+                  const idx = routeData.optimizedRoute.findIndex(p => 
+                    (p.lat === waste.location.lat && p.lng === waste.location.lng) || p.address === waste.address
+                  );
+                  // idx will be 0 for truck start, so waste points will be idx 1, 2, 3...
+                  if (idx > 0) orderNum = idx;
+                }
+
+                return (
+                  <Marker
+                    key={i}
+                    position={{ lat: waste.location.lat, lng: waste.location.lng }}
+                    icon={getMarkerIcon(waste.wasteLevel)}
+                    label={{
+                      text: String(orderNum),
+                      color: 'white',
+                      fontSize: '12px',
+                      fontWeight: 'bold'
+                    }}
+                    onClick={() => setSelectedWaste(waste)}
+                  />
+                );
+              })}
 
               {/* Info Window for Waste */}
               {selectedWaste && (
