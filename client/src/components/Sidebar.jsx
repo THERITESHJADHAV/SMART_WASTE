@@ -62,23 +62,44 @@ export default function Sidebar({ role, setRole, mobileOpen, setMobileOpen }) {
         </div>
 
         {/* Navigation Links */}
-        <nav className="px-3 py-4 flex flex-col gap-1.5 flex-1 overflow-y-auto">
+        <div className="px-5 mt-8 mb-3">
+          <p className="text-[11px] font-black text-gray-500 uppercase tracking-[0.2em]">Navigation</p>
+        </div>
+        <nav className="px-3 flex flex-col gap-2.5 flex-1 overflow-y-auto mb-6">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === '/'}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-md font-bold text-[13px] uppercase tracking-wide border-2 transition-all ${
+                `group relative flex items-center justify-between px-4 py-3.5 rounded-lg font-extrabold text-[13px] uppercase tracking-wide border-2 transition-all ${
                   isActive 
-                    ? 'bg-[#facc15] text-black border-black shadow-[3px_3px_0px_#121212] -translate-y-[1px]' 
+                    ? 'bg-[#facc15] text-black border-black shadow-[4px_4px_0px_#121212] -translate-y-[2px]' 
                     : 'bg-transparent text-gray-400 border-transparent hover:bg-white/5 hover:text-white'
                 }`
               }
               onClick={() => setMobileOpen(false)}
             >
-              {item.icon}
-              <span>{item.label}</span>
+              {({ isActive }) => (
+                <>
+                  <div className="flex items-center gap-4">
+                    {/* Optional left visual anchor mimicking the image's left bar, integrated with Brutalism */}
+                    {isActive && (
+                      <div className="absolute left-[-2px] inset-y-[-2px] w-2.5 bg-black border-r-2 border-black rounded-l-md" />
+                    )}
+                    <span className={`transition-transform duration-200 ${isActive ? 'translate-x-2' : ''}`}>
+                      {item.icon}
+                    </span>
+                    <span className={`transition-transform duration-200 ${isActive ? 'translate-x-2' : ''}`}>
+                      {item.label}
+                    </span>
+                  </div>
+                  {/* Right dot indicator for active state matching reference image */}
+                  {isActive && (
+                    <div className="w-2.5 h-2.5 rounded-full bg-black mr-1" />
+                  )}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
