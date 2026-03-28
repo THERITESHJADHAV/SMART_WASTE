@@ -1,18 +1,23 @@
 import { useState } from 'react';
-import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 import { reportWaste } from '../services/api';
 import { MdCameraAlt, MdLocationOn, MdSend, MdCheckCircle } from 'react-icons/md';
 
-const mapContainerStyle = { width: '100%', height: '100%', minHeight: '520px', borderRadius: '16px' };
-const center = { lat: 19.0760, lng: 72.8777 }; // Mumbai
-const options = {
-  disableDefaultUI: true, zoomControl: true,
-  styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }]
-};
-const libraries = ['places'];
+const center = [19.0760, 72.8777]; // Mumbai
+const customIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+  iconSize: [32, 32], iconAnchor: [16, 32]
+});
+
+// Custom hook to handle map clicks
+function LocationSelector({ setLocation }) {
+  useMapEvents({ click(e) { setLocation({ lat: e.latlng.lat, lng: e.latlng.lng }); } });
+  return null;
+}
 
 /**
- * Report Waste Page — Premium Light UI Form
+ * Report Waste Page — Leaflet Map Version
  */
 export default function ReportWaste() {
   const [address, setAddress] = useState('');
@@ -23,10 +28,6 @@ export default function ReportWaste() {
   const [imageBase64, setImageBase64] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY, libraries,
-  });
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -46,11 +47,9 @@ export default function ReportWaste() {
       await reportWaste({ address, location, wasteType, wasteLevel, image: imageBase64 });
       setSuccess(true);
       setTimeout(() => { setSuccess(false); setAddress(''); setLocation(null); setWasteType('General'); setWasteLevel('Medium'); setImagePreview(null); setImageBase64(null); }, 3000);
-    } catch (err) { alert('Failed to submit report. Please try again.'); console.error(err); }
+    } catch (err) { alert('Failed to submit report.'); console.error(err); }
     finally { setSubmitting(false); }
   };
-
-  const onMapClick = (e) => { setLocation({ lat: e.latLng.lat(), lng: e.latLng.lng() }); };
 
   return (
     <div className="space-y-6 pb-8">
@@ -70,23 +69,23 @@ export default function ReportWaste() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Map Section */}
+        {/* Leaflet Map Section */}
         <div className="lg:col-span-3 premium-card overflow-hidden p-2 relative" style={{ minHeight: '520px' }}>
-          {loadError && <div className="p-5 font-semibold text-rose-500">Error loading maps. Check API Key.</div>}
-          {!isLoaded ? (
-            <div className="flex justify-center items-center h-full"><div className="spinner-premium"></div></div>
-          ) : (
-            <div className="w-full h-full rounded-xl overflow-hidden">
-              <GoogleMap mapContainerStyle={mapContainerStyle} zoom={12} center={center} options={options} onClick={onMapClick}>
-                {location && <Marker position={location} />}
-              </GoogleMap>
-            </div>
-          )}
+          <div className="w-full h-full rounded-xl overflow-hidden relative z-0">
+            <MapContainer center={center} zoom={12} style={{ height: '100%', width: '100%', zIndex: 1 }}>
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="https://carto.com/">CartoDB</a>'
+              />
+              <LocationSelector setLocation={setLocation} />
+              {location && <Marker position={[location.lat, location.lng]} icon={customIcon} />}
+            </MapContainer>
+          </div>
         </div>
 
         {/* Form Section */}
         <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit} className="premium-card p-6 md:p-8 space-y-6">
+          <form onSubmit={handleSubmit} className="premium-card p-6 md:p-8 space-y-6 relative z-10 bg-white">
             <h3 className="section-title flex items-center gap-2 !mb-6">
               <span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center"><MdLocationOn size={18} /></span>
               Location Details

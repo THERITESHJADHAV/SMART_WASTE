@@ -1,19 +1,25 @@
 import { useState, useEffect } from 'react';
-import { GoogleMap, useLoadScript, Marker, Polyline, InfoWindow } from '@react-google-maps/api';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import L from 'leaflet';
 import { getWasteData, optimizeRoute } from '../services/api';
 import { MdRoute, MdPlayArrow } from 'react-icons/md';
 
-const mapContainerStyle = { width: '100%', height: '100%', minHeight: '550px', borderRadius: '16px' };
-const truckStart = { lat: 19.0760, lng: 72.8777 };
-const options = {
-  disableDefaultUI: true, zoomControl: true,
-  styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }]
-};
-const libraries = ['places'];
+const center = [19.0760, 72.8777]; // Mumbai
 const levelColors = { High: '#F43F5E', Medium: '#F59E0B', Low: '#10B981' };
 
+const truckIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/2830/2830180.png',
+  iconSize: [40, 40], iconAnchor: [20, 40], popupAnchor: [0, -40]
+});
+
+const getMarkerHtml = (num, color) => `
+  <div style="background-color: ${color}; color: white; width: 28px; height: 28px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    ${num}
+  </div>
+`;
+
 /**
- * Map Visualization Page — Premium Light UI Layout
+ * Map Visualization Page — Leaflet Route Planner
  */
 export default function MapVisualization() {
   const [wasteData, setWasteData] = useState([]);
@@ -21,10 +27,6 @@ export default function MapVisualization() {
   const [loadingData, setLoadingData] = useState(true);
   const [optimizing, setOptimizing] = useState(false);
   const [selectedWaste, setSelectedWaste] = useState(null);
-
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY, libraries,
-  });
 
   useEffect(() => { fetchWasteData(); }, []);
 
@@ -36,20 +38,9 @@ export default function MapVisualization() {
 
   const handleOptimize = async () => {
     setOptimizing(true);
-    try { const res = await optimizeRoute(truckStart); setRouteData(res.data.data); }
+    try { const res = await optimizeRoute({ lat: center[0], lng: center[1] }); setRouteData(res.data.data); }
     catch (err) { console.error('Route optimization failed:', err); alert('Failed to optimize route.'); }
     finally { setOptimizing(false); }
-  };
-
-  const getMarkerIcon = (level) => ({
-    path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
-    fillColor: levelColors[level] || '#10B981',
-    fillOpacity: 1, strokeWeight: 3, strokeColor: '#ffffff', scale: 12,
-  });
-
-  const truckIcon = {
-    url: 'https://cdn-icons-png.flaticon.com/512/2830/2830180.png',
-    scaledSize: window.google?.maps?.Size ? new window.google.maps.Size(40, 40) : null,
   };
 
   if (loadingData) {
@@ -63,14 +54,14 @@ export default function MapVisualization() {
     );
   }
 
-  const routeCoordinates = routeData?.optimizedRoute?.map(p => ({ lat: p.lat, lng: p.lng })) || [];
+  const routeCoordinates = routeData?.optimizedRoute?.map(p => [p.lat, p.lng]) || [];
 
   return (
     <div className="space-y-6 pb-8">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="page-title">Route Planner</h1>
-          <p className="page-subtitle">Visualize waste hotspots and generate the optimal path.</p>
+          <p className="page-subtitle">Visualize waste hotspots and generate the optimal collection path.</p>
         </div>
         <button onClick={handleOptimize} disabled={optimizing} className="btn-premium px-6 scale-95 origin-right">
           {optimizing ? (
@@ -85,63 +76,56 @@ export default function MapVisualization() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Floating Map Area */}
+        {/* Leaflet Map Area */}
         <div className="lg:col-span-3 premium-card overflow-hidden p-2 relative" style={{ minHeight: '550px' }}>
-          {loadError && <div className="p-5 font-bold text-rose-500">Error loading maps. Check API Key.</div>}
-          {!isLoaded ? (
-            <div className="flex justify-center items-center h-full"><div className="spinner-premium"></div></div>
-          ) : (
-            <div className="w-full h-full rounded-xl overflow-hidden">
-              <GoogleMap mapContainerStyle={mapContainerStyle} zoom={12} center={truckStart} options={options}>
-                <Marker position={truckStart} icon={truckIcon.scaledSize ? truckIcon : undefined} title="Truck Start Center" />
+          <div className="w-full h-full rounded-xl overflow-hidden relative z-0">
+            <MapContainer center={center} zoom={12} style={{ height: '100%', width: '100%', zIndex: 1 }}>
+              <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" attribution='&copy; <a href="https://carto.com/">CartoDB</a>' />
+              
+              <Marker position={center} icon={truckIcon}>
+                <Popup><span className="font-bold text-slate-800">Truck Start Hub</span></Popup>
+              </Marker>
 
-                {wasteData.map((waste, i) => {
-                  let orderNum = i + 1;
-                  if (routeData) {
-                    const idx = routeData.optimizedRoute.findIndex(p =>
-                      (p.lat === waste.location.lat && p.lng === waste.location.lng) || p.address === waste.address
-                    );
-                    if (idx > 0) orderNum = idx;
-                  }
-                  return (
-                    <Marker key={i} position={{ lat: waste.location.lat, lng: waste.location.lng }}
-                      icon={getMarkerIcon(waste.wasteLevel)}
-                      label={{ text: String(orderNum), color: 'white', fontSize: '11px', fontWeight: 'bold' }}
-                      onClick={() => setSelectedWaste(waste)} />
+              {wasteData.map((waste, i) => {
+                let orderNum = i + 1;
+                if (routeData) {
+                  const idx = routeData.optimizedRoute.findIndex(p =>
+                    (p.lat === waste.location.lat && p.lng === waste.location.lng) || p.address === waste.address
                   );
-                })}
-
-                {selectedWaste && (
-                  <InfoWindow position={{ lat: selectedWaste.location.lat, lng: selectedWaste.location.lng }} onCloseClick={() => setSelectedWaste(null)}>
-                    <div className="pr-4 py-1 min-w-[200px] font-sans">
-                      <strong className="text-[14px] font-bold text-slate-800 block mb-2">{selectedWaste.address || 'Reported Location'}</strong>
-                      <div className="text-xs text-slate-600 font-medium space-y-1.5">
-                        <div className="flex justify-between">
-                          <span className="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Severity</span>
-                          <span style={{ color: levelColors[selectedWaste.wasteLevel] }} className="font-bold">{selectedWaste.wasteLevel}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Category</span>
-                          <span>{selectedWaste.wasteType}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Status</span>
-                          <span className="text-slate-800">{selectedWaste.status}</span>
+                  if (idx > 0) orderNum = idx;
+                }
+                const icon = L.divIcon({ html: getMarkerHtml(orderNum, levelColors[waste.wasteLevel] || '#10B981'), className: '', iconSize: [28, 28], iconAnchor: [14, 14] });
+                
+                return (
+                  <Marker key={i} position={[waste.location.lat, waste.location.lng]} icon={icon} eventHandlers={{ click: () => setSelectedWaste(waste) }}>
+                    <Popup className="premium-popup">
+                      <div className="min-w-[200px] font-sans">
+                        <strong className="text-[14px] font-bold text-slate-800 block mb-2">{waste.address || 'Reported Location'}</strong>
+                        <div className="text-xs text-slate-600 font-medium space-y-1.5">
+                          <div className="flex justify-between">
+                            <span className="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Severity</span>
+                            <span style={{ color: levelColors[waste.wasteLevel] }} className="font-bold">{waste.wasteLevel}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Category</span>
+                            <span>{waste.wasteType}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Status</span>
+                            <span className="text-slate-800 font-bold">{waste.status}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </InfoWindow>
-                )}
+                    </Popup>
+                  </Marker>
+                );
+              })}
 
-                {routeCoordinates.length > 0 && (
-                  <Polyline path={routeCoordinates} options={{
-                    strokeColor: '#0F172A', strokeOpacity: 0.8, strokeWeight: 5,
-                    icons: [{ icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 3 }, offset: '0', repeat: '24px' }],
-                  }} />
-                )}
-              </GoogleMap>
-            </div>
-          )}
+              {routeCoordinates.length > 0 && (
+                <Polyline positions={routeCoordinates} pathOptions={{ color: '#0F172A', weight: 4, dashArray: '10, 10' }} />
+              )}
+            </MapContainer>
+          </div>
         </div>
 
         {/* Right Action/Stats Panel */}
@@ -161,7 +145,7 @@ export default function MapVisualization() {
                 </div>
               ))}
               <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
-                <div className="w-6 h-1 bg-slate-800 rounded-full"></div>
+                <div className="w-6 h-1 border-t-2 border-dashed border-slate-800 rounded-full"></div>
                 <span>Optimized Path</span>
               </div>
             </div>

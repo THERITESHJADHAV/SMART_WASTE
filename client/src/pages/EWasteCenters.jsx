@@ -1,28 +1,30 @@
 import { useState, useEffect } from 'react';
-import { GoogleMap, useLoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import { getEWasteCenters } from '../services/api';
-import { MdRecycling, MdPhone, MdAccessTime, MdLocationOn } from 'react-icons/md';
+import { MdPhone, MdAccessTime, MdLocationOn } from 'react-icons/md';
 
-const mapContainerStyle = { width: '100%', height: '100%', minHeight: '600px', borderRadius: '16px' };
-const options = {
-  disableDefaultUI: true, zoomControl: true,
-  styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }]
-};
-const libraries = ['places'];
+/** Component to update map center dynamically */
+function ChangeView({ center }) {
+  const map = useMap();
+  map.setView(center, map.getZoom());
+  return null;
+}
+
+const getMarkerHtml = (num, color) => `
+  <div style="background-color: ${color}; color: white; width: 26px; height: 26px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+    ${num}
+  </div>
+`;
 
 /**
- * E-Waste Centers Page — Premium Light UI Layout
+ * E-Waste Centers Page — Leaflet Map Version
  */
 export default function EWasteCenters() {
   const [centers, setCenters] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [selectedCenter, setSelectedCenter] = useState(null);
   const [userLocation, setUserLocation] = useState({ lat: 19.076, lng: 72.8777 });
-  const [activeMarker, setActiveMarker] = useState(null);
-
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY, libraries,
-  });
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -39,15 +41,7 @@ export default function EWasteCenters() {
     finally { setLoadingData(false); }
   };
 
-  const getUserMarkerIcon = () => ({
-    path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
-    fillColor: '#3b82f6', fillOpacity: 1, strokeWeight: 3, strokeColor: '#ffffff', scale: 12,
-  });
-
-  const getEWasteMarkerIcon = () => ({
-    path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
-    fillColor: '#10B981', fillOpacity: 0.9, strokeWeight: 3, strokeColor: '#ffffff', scale: 12,
-  });
+  const userIcon = L.divIcon({ html: getMarkerHtml('★', '#3b82f6'), className: '', iconSize: [26, 26], iconAnchor: [13, 13] });
 
   if (loadingData) {
     return (
@@ -75,7 +69,7 @@ export default function EWasteCenters() {
           {centers.map((center, i) => (
             <div
               key={i}
-              onClick={() => { setSelectedCenter(center); setActiveMarker(center._id); }}
+              onClick={() => setSelectedCenter(center)}
               className={`premium-card cursor-pointer transition-all ${
                 selectedCenter?._id === center._id 
                   ? 'ring-2 ring-emerald-500 shadow-lg scale-[1.02] bg-emerald-50/10' 
@@ -122,37 +116,38 @@ export default function EWasteCenters() {
           )}
         </div>
 
-        {/* Floating Map */}
+        {/* Leaflet Map */}
         <div className="lg:col-span-3 premium-card overflow-hidden p-2 relative" style={{ minHeight: '600px' }}>
-          {loadError && <div className="p-5 font-bold text-rose-500">Error loading maps. Check permissions.</div>}
-          {!isLoaded ? (
-            <div className="flex justify-center items-center h-full"><div className="spinner-premium"></div></div>
-          ) : (
-            <div className="w-full h-full rounded-xl overflow-hidden">
-              <GoogleMap mapContainerStyle={mapContainerStyle} zoom={11} center={userLocation} options={options}>
-                <Marker position={userLocation} icon={getUserMarkerIcon()} title="Your Location" label={{ text: '★', fontSize: '11px', color: 'white' }} />
-                {centers.map((center, i) => (
-                  <Marker key={i} position={{ lat: center.location.lat, lng: center.location.lng }} icon={getEWasteMarkerIcon()}
-                    label={{ text: String(i + 1), color: 'white', fontSize: '11px', fontWeight: 'bold' }}
-                    onClick={() => { setSelectedCenter(center); setActiveMarker(center._id); }}>
-                    {activeMarker === center._id && (
-                      <InfoWindow onCloseClick={() => setActiveMarker(null)}>
-                        <div className="pr-4 py-1 min-w-[200px] font-sans">
-                          <strong className="text-[15px] font-bold text-slate-800 block mb-2">{center.name}</strong>
-                          <div className="text-xs text-slate-600 font-medium space-y-1.5">
-                            <div className="flex gap-2"><MdLocationOn className="text-rose-400 shrink-0 mt-0.5" size={14}/><span>{center.address}</span></div>
-                            <div className="flex gap-2"><MdPhone className="text-slate-400 shrink-0" size={14}/><span>{center.contact}</span></div>
-                            <div className="flex gap-2"><MdAccessTime className="text-blue-400 shrink-0" size={14}/><span>{center.operatingHours}</span></div>
-                            {center.distance !== undefined && <div className="text-emerald-600 font-bold mt-2 pt-2 border-t border-slate-100">Distance: {center.distance} km</div>}
-                          </div>
+          <div className="w-full h-full rounded-xl overflow-hidden relative z-0">
+            <MapContainer center={[userLocation.lat, userLocation.lng]} zoom={11} style={{ height: '100%', width: '100%', zIndex: 1 }}>
+              <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" attribution='&copy; <a href="https://carto.com/">CartoDB</a>' />
+              {selectedCenter && <ChangeView center={[selectedCenter.location.lat, selectedCenter.location.lng]} />}
+              
+              <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
+                <Popup><strong>Your Location</strong></Popup>
+              </Marker>
+
+              {centers.map((center, i) => {
+                const isSelected = selectedCenter?._id === center._id;
+                const icon = L.divIcon({ html: getMarkerHtml(i + 1, isSelected ? '#F59E0B' : '#10B981'), className: '', iconSize: [26, 26], iconAnchor: [13, 13] });
+                return (
+                  <Marker key={i} position={[center.location.lat, center.location.lng]} icon={icon} eventHandlers={{ click: () => setSelectedCenter(center) }}>
+                    <Popup autoPan={false}>
+                      <div className="pr-2 py-1 min-w-[180px] font-sans">
+                        <strong className="text-[14px] font-bold text-slate-800 block mb-2">{center.name}</strong>
+                        <div className="text-xs text-slate-600 font-medium space-y-1.5">
+                          <div className="flex gap-2"><MdLocationOn className="text-rose-400 shrink-0 mt-0.5" size={14}/><span>{center.address}</span></div>
+                          <div className="flex gap-2"><MdPhone className="text-slate-400 shrink-0" size={14}/><span>{center.contact}</span></div>
+                          <div className="flex gap-2"><MdAccessTime className="text-blue-400 shrink-0" size={14}/><span>{center.operatingHours}</span></div>
+                          {center.distance !== undefined && <div className="text-emerald-600 font-bold mt-2 pt-2 border-t border-slate-100">Distance: {center.distance} km</div>}
                         </div>
-                      </InfoWindow>
-                    )}
+                      </div>
+                    </Popup>
                   </Marker>
-                ))}
-              </GoogleMap>
-            </div>
-          )}
+                );
+              })}
+            </MapContainer>
+          </div>
         </div>
       </div>
     </div>
