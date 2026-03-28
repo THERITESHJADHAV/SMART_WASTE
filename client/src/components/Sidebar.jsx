@@ -9,7 +9,8 @@ import {
   MdSpeed,
   MdClose,
   MdAdminPanelSettings,
-  MdPerson
+  MdPerson,
+  MdSmartToy
 } from 'react-icons/md';
 
 /**
@@ -21,6 +22,7 @@ export default function Sidebar({ role, setRole, mobileOpen, setMobileOpen }) {
     { to: '/report-waste', icon: <MdDeleteOutline size={26} />, label: 'Report Waste' },
     { to: '/request-pickup', icon: <MdLocalShipping size={26} />, label: 'Request Pickup' },
     { to: '/ewaste-centers', icon: <MdRecycling size={26} />, label: 'E-Waste Centers' },
+    { to: '/ai-chat', icon: <MdSmartToy size={26} />, label: 'AI Assistant' },
   ];
 
   const adminNavItems = [

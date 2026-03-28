@@ -7,6 +7,7 @@ import RequestPickup from './pages/RequestPickup';
 import MapVisualization from './pages/MapVisualization';
 import EWasteCenters from './pages/EWasteCenters';
 import Efficiency from './pages/Efficiency';
+import AIChatbot from './pages/AIChatbot';
 import './index.css';
 
 /**
@@ -28,6 +29,7 @@ function App() {
           {/* User Only Routes */}
           <Route path="/report-waste" element={role === 'user' ? <ReportWaste /> : <Navigate to="/" replace />} />
           <Route path="/request-pickup" element={role === 'user' ? <RequestPickup /> : <Navigate to="/" replace />} />
+          <Route path="/ai-chat" element={role === 'user' ? <AIChatbot /> : <Navigate to="/" replace />} />
 
           {/* Admin Only Routes */}
           <Route path="/map" element={role === 'admin' ? <MapVisualization /> : <Navigate to="/" replace />} />

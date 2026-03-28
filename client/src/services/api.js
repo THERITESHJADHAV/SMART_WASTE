@@ -64,4 +64,12 @@ export const optimizeRoute = (truckStart, locations) =>
 // ============================================================
 export const healthCheck = () => api.get('/health');
 
+// ============================================================
+// AI CHATBOT
+// ============================================================
+
+/** Send a message (and optional image) to the AI chatbot */
+export const sendChatMessage = (message, imageBase64) =>
+  api.post('/chat', { message, imageBase64 });
+
 export default api;

@@ -10,7 +10,7 @@ export default function Layout({ role, setRole }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--bg-light)] text-[var(--text-primary)]">
+    <div className="flex h-screen overflow-hidden bg-[var(--bg-light)] text-[var(--text-primary)] lg:gap-x-4">
       <Sidebar role={role} setRole={setRole} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
       
       {/* Mobile Top Bar */}
@@ -29,7 +29,7 @@ export default function Layout({ role, setRole }) {
         </button>
       </div>
 
-      <main className="flex-1 w-full h-screen overflow-y-auto pt-[4.5rem] pb-6 px-4 lg:pt-8 lg:pb-8 lg:px-8">
+      <main className="flex-1 w-full h-screen overflow-y-auto pt-[4.5rem] pb-6 px-4 lg:pt-8 lg:pb-8 lg:pr-12 lg:pl-4">
         <div className="max-w-[1200px] mx-auto">
           <Outlet />
         </div>

@@ -166,7 +166,7 @@ export default function Dashboard({ role = 'admin' }) {
 
   // --- ADMIN DASHBOARD ---
   return (
-    <div className="space-y-6 pb-6">
+    <div className="space-y-8 pb-8">
       {/* Page Header */}
       <div className="page-header">
         <div className="page-header-inner">
@@ -176,7 +176,7 @@ export default function Dashboard({ role = 'admin' }) {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-2">
         {statCards.map((card, i) => (
           <div key={i} className="stat-card">
             <div className="stat-icon" style={{ background: card.bg }}>
