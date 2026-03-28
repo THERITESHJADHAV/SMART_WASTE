@@ -1,46 +1,106 @@
-# 🌱 SmartWaste — Web-Based Waste Collection & E-Waste Disposal System
+<div align="center">
+  
+# ♻️ SmartWaste Platform (Eco-Air)
 
-SmartWaste is a modern, full-stack web application designed to optimize waste collection and e-waste disposal for smart cities, targeting the Mumbai region. It connects citizens with municipal waste management services, providing an interactive map, priority-based reporting, and an AI-simulated route optimization engine for garbage collection trucks.
+**Advanced AI-Powered Waste Collection & E-Waste Disposal System**
 
-Designed with a sleek, high-contrast **Neobrutalist UI**, the platform prioritizes clarity, usability, and dynamic data visualization.
+A comprehensive, full-stack waste management ecosystem bridging the gap between residents, municipal admins, businesses/societies, and waste collection vendors. Powered by Machine Learning for predictive heatmaps and route optimization, and built with a premium "Eco-Air" UI design system.
 
----
-
-## 🚀 Features
-
-### 👤 For Citizens
-- **Report Waste with Precision**: Click anywhere on the interactive Leaflet map to report waste locations. Tag priority levels (Low, Medium, High) and waste types (General, E-Waste).
-- **Request Waste Pickup**: Schedule a direct waste collection pickup during preferred time slots (e.g., 10:00 AM - 12:00 PM).
-- **Find Certified E-Waste Centers**: View nearby authorized e-waste recycling centers, sorted by distance, with direct contact numbers and operating hours.
-
-### 🏢 For Municipal Authorities (Dashboard)
-- **Live Data Dashboard**: View real-time aggregated metrics—Total Reports, Collection Rates, and Pending tasks.
-- **Dynamic Charts (Recharts)**: Interactive Area, Bar, and Pie charts displaying weekly trends, status distributions, and waste-level breakdowns.
-- **AI Route Optimization (Simulation)**: Compare fixed collection routes vs. mathematically optimized routes. The efficiency tab instantly calculates time saved, distance reduced, and fuel cost savings.
+</div>
 
 ---
 
-## 🛠️ Tech Stack
+## 🌟 Project Overview
 
-**Frontend:**
-- **React.js** (Vite)
-- **Tailwind CSS v4** (Custom Neobrutalist design system)
-- **React-Leaflet** (Interactive maps & location pinning)
-- **Recharts** (Dynamic data visualization)
-- **React Icons** (Material Design icons)
+SmartWaste is an intelligent marketplace and logistics platform designed to optimize municipal and corporate waste management. It transitions from traditional, inefficient garbage collection to a dynamic, data-driven approach. 
 
-**Backend:**
-- **Node.js & Express.js** (REST API architecture)
-- **MongoDB (In-Memory)** (via `mongodb-memory-server` for effortless local setup without Docker/local MongoDB installation)
-- **Mongoose** (Data modeling)
+By utilizing **four distinct user roles**, the platform ensures every stakeholder in the waste lifecycle is empowered: from individuals reporting street trash, to societies selling bulk recyclable e-waste, to vendors optimizing their collection routes.
 
 ---
 
-## 📥 Local Setup & Installation
+## ✨ Key Features by Role
+
+### 👤 1. User (Resident)
+*   **Report Waste:** Effortlessly report overflowing bins or street trash with photo uploads. Integrated ML categorizes the waste (General, Plastic, E-Waste).
+*   **Request Pickup:** Schedule personal waste pickups with address geocoding via interactive **Leaflet maps**. 
+*   **Impact Leaderboard:** Gamified sustainability tracking. Users earn points for recycling, fostering community competition.
+*   **E-Waste Centers:** Interactive map displaying verified nearby e-waste recycling facilities.
+
+### 👑 2. Admin (Municipal / Platform Manager)
+*   **Live Job Tracker:** Real-time satellite-style map tracking the status of all active pickups and vendor fleet locations.
+*   **Predictive Heatmaps:** AI-generated heatmaps visualizing waste density across the city, predicting overflow hotspots before they happen.
+*   **Optimized Route Map:** Automated Transport Salesperson Problem (TSP) logic calculating the most fuel-efficient routes for collection trucks.
+*   **Efficiency Analytics:** Rich data visualization using Recharts to track fleet performance, daily waste volumes, and platform growth.
+*   **B2B CRM:** Full Customer Relationship Management module. Track active Societies (Customers) and Fleet Operators (Vendors), complete with contact details, historically assigned orders, and financial transaction logs.
+
+### 🏢 3. Business / Society Manager
+*   **Bulk Marketplace:** Post bulk waste requests (e.g., 500kg E-waste). Instead of fixed pricing, the request enters a marketplace where vendors compete and bid.
+*   **Bid Management:** Review vendor bids, compare prices, and assign the job to the preferred vendor.
+*   **EcoCoins Reward System:** Earn **10 EcoCoins per kg** of waste recycled. 
+*   **Rewards Hub:** Redeem accumulated EcoCoins for sustainability rewards like bulk vendor discounts, tree plantations, or corporate Platinum Sustainability Badges.
+
+### 🚛 4. Vendor (Waste Collector)
+*   **Live Bidding:** Access the marketplace to place competitive bids on bulk requests posted by Businesses.
+*   **Job Management:** Accept jobs, update statuses (In Transit, Completed), and track lifetime earnings.
+*   **Vendor Route Optimization:** Dedicated routing map that generates the most efficient path between all of their assigned pickup locations.
+
+---
+
+## 💻 Technology Stack
+
+### Frontend (Client)
+*   **Framework:** React 18 + Vite
+*   **Styling:** Tailwind CSS (Premium *Eco-Air* custom design system, glassmorphism, clean light-mode aesthetics)
+*   **Routing:** React Router DOM (Role-based route guarding)
+*   **Mapping:** Leaflet & React-Leaflet (Complete migration from Google Maps for robust, quota-free geospatial plotting)
+*   **Data Visualization:** Recharts
+*   **Icons:** React Icons (Material Design)
+
+### Backend (Server)
+*   **Runtime:** Node.js + Express.js
+*   **Database:** MongoDB via Mongoose ODM (Persistent storage, complex aggregations)
+*   **Architecture:** RESTful API design (Decoupled Controllers, Routes, and Models)
+
+### Machine Learning (ML Service)
+*   **Framework:** Python 3.x + Flask
+*   **Libraries:** NumPy, Pandas, Scikit-learn
+*   **Capabilities:** predictive heat-mapping, synthetic data generation, and theoretical image classification parsing.
+
+---
+
+## 📂 Project Structure
+
+```text
+SMART_WASTE/
+├── client/                     # React Frontend
+│   ├── src/
+│   │   ├── components/         # Reusable UI (Sidebar, Layout, Cards)
+│   │   ├── contexts/           # AuthContext (Role switching logic)
+│   │   ├── pages/              # Role-specific Pages (AdminCRM, Heatmap, RequestPickup, etc.)
+│   │   ├── services/           # Axios API integrations
+│   │   ├── App.jsx             # React Router setup
+│   │   └── index.css           # Tailwind configuration & Eco-Air design tokens
+├── server/                     # Node.js Backend
+│   ├── config/                 # MongoDB connection logic
+│   ├── controllers/            # Business logic (crmController, pickupController, etc.)
+│   ├── models/                 # Mongoose Schemas (Customer, Vendor, PickupRequest)
+│   ├── routes/                 # Express API routing
+│   ├── utils/                  # Helper algorithms (Route Optimizer)
+│   ├── seed.js                 # Database population script
+│   └── server.js               # Entry point
+└── ml_service/                 # Python Microservice
+    ├── app.py                  # Flask server
+    └── generate_data.py        # ML prediction logic
+```
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v18+ recommended)
-- Git
+*   Node.js (v18+)
+*   MongoDB (Running locally on `mongodb://127.0.0.1:27017` or MongoDB Atlas)
+*   Python 3.8+ (For the ML Service)
 
 ### 1. Clone the Repository
 ```bash
@@ -48,71 +108,58 @@ git clone https://github.com/THERITESHJADHAV/SMART_WASTE.git
 cd SMART_WASTE
 ```
 
-### 2. Run the Backend Server
-The backend uses an in-memory MongoDB instance, which automatically seeds 15+ data points on startup. No `.env` or database configuration is required!
+### 2. Setup the Node Backend
 ```bash
 cd server
 npm install
-node server.js
 ```
-*The server will start on `http://localhost:5000`.*
+Create a `.env` file in the `server` directory:
+```env
+PORT=5000
+MONGO_URI=mongodb://127.0.0.1:27017/smartwaste
+ML_SERVICE_URL=http://localhost:5001
+```
+Run the seed script to populate realistic test data (Customers, Vendors, Pickups):
+```bash
+npm run seed
+```
+Start the backend server:
+```bash
+npm start
+```
 
-### 3. Run the Frontend Client
-Open a new terminal window:
+### 3. Setup the Python ML Service
+Open a new terminal configuration:
+```bash
+cd ml_service
+pip install -r requirements.txt
+python app.py
+```
+*(The Flask server will run on port 5001)*
+
+### 4. Setup the React Frontend
+Open a third terminal:
 ```bash
 cd client
 npm install
+```
+Start the Vite development server:
+```bash
 npm run dev
 ```
-*The React app will be accessible at `http://localhost:5173`.*
+
+The application will be accessible at **http://localhost:5173**. Use the **Role Switcher** at the bottom left of the Sidebar to instantly toggle between User, Admin, Business, and Vendor views.
 
 ---
 
-## 🎨 Design Philosophy (Neobrutalism)
-The UI incorporates a "Neobrutalist" aesthetic, characterized by:
-- Sharp, bold black borders (`var(--border)`).
-- Hard drop shadows on cards, buttons, and inputs instead of diffuse blurs.
-- High-contrast color palette: Warning Red (`#ef4444`), Alert Yellow (`#facc15`), and Success Green (`#10b981`).
-- Strong typography pairings using **Space Grotesk** (headings) and **Inter** (body text).
+## 🎨 The "Eco-Air" Design System
+This project features a meticulously crafted UI framework internally dubbed **Eco-Air**. Moving away from generic bootstrap designs, Eco-Air focuses on:
+*   **Vibrant accents:** Emerald greens, deep indigos, and warm ambers to signify sustainability and success.
+*   **Depth and Glassmorphism:** Soft shadows (`shadow-sm`, `premium-card` tokens) and faint background gradients.
+*   **Typography:** Bold, uppercase tracking labels for micro-copy, paired with clean, heavy headers for immediate data comprehension.
 
 ---
 
-## 📂 Project Structure
-
-```
-SMART_WASTE/
-├── client/                 # React Frontend (Vite)
-│   ├── src/
-│   │   ├── components/     # Layout, Sidebar, Navbar
-│   │   ├── pages/          # Dashboard, Map, Reports, Efficiency
-│   │   ├── services/       # Axios API integration
-│   │   ├── App.jsx         # React Router setup
-│   │   └── index.css       # Core design system & Tailwind
-├── server/                 # Express Backend
-│   ├── config/             # DB Connection (Memory Server)
-│   ├── controllers/        # Waste, Pickup, Route Logic
-│   ├── models/             # Mongoose Schemas
-│   ├── routes/             # API Endpoints
-│   ├── utils/              # Optimization Algorithms
-│   └── seed.js             # Initial database seeding
-```
-
----
-
-## 📝 API Endpoints Summary
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Server status check |
-| POST | `/api/report-waste` | Submit new waste location |
-| GET | `/api/waste-data` | Retrieve reported waste list |
-| GET | `/api/waste-stats` | Aggregated dashboard metrics |
-| POST | `/api/request-pickup` | Schedule a home pickup |
-| GET | `/api/ewaste-centers` | View certified recyclers |
-| POST | `/api/optimize-route` | Run efficiency simulation |
-
----
-
-## 🧑‍💻 Author
-**Ritesh Jadhav**
-- GitHub: [@THERITESHJADHAV](https://github.com/THERITESHJADHAV)
+<p align="center">
+  <i>Built with ❤️ for a cleaner, smarter future.</i>
+</p>
