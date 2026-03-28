@@ -9,6 +9,8 @@ import Heatmap from './pages/Heatmap';
 import EWasteCenters from './pages/EWasteCenters';
 import Efficiency from './pages/Efficiency';
 import AIChatbot from './pages/AIChatbot';
+import BusinessDashboard from './pages/BusinessDashboard';
+import VendorDashboard from './pages/VendorDashboard';
 import './index.css';
 
 /**
@@ -17,25 +19,36 @@ import './index.css';
  */
 export default function App() {
   const { role } = useAuth();
+  
+  // Role checks
   const isAdmin = role === 'Admin';
+  const isBusiness = role === 'Business';
+  const isVendor = role === 'Vendor';
+  const isUser = role === 'User';
 
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
           {/* Shared Routes */}
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={isAdmin || isUser ? <Dashboard /> : <Navigate to={isBusiness ? "/business" : "/vendor"} replace />} />
           <Route path="/e-waste" element={<EWasteCenters />} />
 
-          {/* User Only Routes */}
-          <Route path="/report" element={!isAdmin ? <ReportWaste /> : <Navigate to="/" replace />} />
-          <Route path="/pickup" element={!isAdmin ? <RequestPickup /> : <Navigate to="/" replace />} />
-          <Route path="/ai-chat" element={!isAdmin ? <AIChatbot /> : <Navigate to="/" replace />} />
+          {/* User Only Routes (User & Business can access AI Chat) */}
+          <Route path="/report" element={isUser ? <ReportWaste /> : <Navigate to="/" replace />} />
+          <Route path="/pickup" element={isUser ? <RequestPickup /> : <Navigate to="/" replace />} />
+          <Route path="/ai-chat" element={isUser || isBusiness ? <AIChatbot /> : <Navigate to="/" replace />} />
 
           {/* Admin Only Routes */}
           <Route path="/map" element={isAdmin ? <MapVisualization /> : <Navigate to="/" replace />} />
           <Route path="/heatmap" element={isAdmin ? <Heatmap /> : <Navigate to="/" replace />} />
           <Route path="/efficiency" element={isAdmin ? <Efficiency /> : <Navigate to="/" replace />} />
+
+          {/* Business Only Routes */}
+          <Route path="/business" element={isBusiness ? <BusinessDashboard /> : <Navigate to="/" replace />} />
+
+          {/* Vendor Only Routes */}
+          <Route path="/vendor" element={isVendor ? <VendorDashboard /> : <Navigate to="/" replace />} />
         </Route>
       </Routes>
     </BrowserRouter>

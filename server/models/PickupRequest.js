@@ -22,6 +22,16 @@ const pickupRequestSchema = new mongoose.Schema({
     default: 'Pending'
   },
   requestedBy: { type: String, default: 'User' },
+  // Business/Vendor Marketplace Expansion fields
+  isBulk: { type: Boolean, default: false },
+  weight: { type: Number }, // approximate weight in kg
+  bids: [{
+    vendorName: String,
+    amount: Number,
+    status: { type: String, enum: ['Pending', 'Accepted', 'Rejected'], default: 'Pending' },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  assignedVendor: { type: String },
   timestamp: { type: Date, default: Date.now }
 });
 

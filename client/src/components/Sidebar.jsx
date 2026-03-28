@@ -10,29 +10,51 @@ import {
   MdSmartToy,
   MdLogout,
   MdEco,
-  MdGrain
+  MdGrain,
+  MdBusinessCenter,
+  MdStorefront
 } from 'react-icons/md';
 
 /**
  * Sidebar Component — Pure White Floating Panel
  */
 export default function Sidebar({ currentPath, closeMobile }) {
-  const { user, role, setRole, logout } = useAuth(); // Assume we still toggle role for demo
-  const isAdmin = role === 'Admin';
+  const { user, role, setRole, logout } = useAuth();
 
-  const menuItems = isAdmin ? [
-    { name: 'Dashboard', path: '/', icon: MdDashboard },
-    { name: 'Route Map', path: '/map', icon: MdMap },
-    { name: 'Heatmap', path: '/heatmap', icon: MdGrain },
-    { name: 'Efficiency', path: '/efficiency', icon: MdBarChart },
-    { name: 'E-Waste Centers', path: '/e-waste', icon: MdRestore },
-  ] : [
-    { name: 'Dashboard', path: '/', icon: MdDashboard },
-    { name: 'Report Waste', path: '/report', icon: MdDeleteOutline },
-    { name: 'Request Pickup', path: '/pickup', icon: MdLocalShipping },
-    { name: 'E-Waste Centers', path: '/e-waste', icon: MdRestore },
-    { name: 'AI Assistant', path: '/ai-chat', icon: MdSmartToy },
-  ];
+  const getMenuItems = () => {
+    switch(role) {
+      case 'Admin':
+        return [
+          { name: 'Dashboard', path: '/', icon: MdDashboard },
+          { name: 'Route Map', path: '/map', icon: MdMap },
+          { name: 'Heatmap', path: '/heatmap', icon: MdGrain },
+          { name: 'Efficiency', path: '/efficiency', icon: MdBarChart },
+          { name: 'E-Waste Centers', path: '/e-waste', icon: MdRestore },
+        ];
+      case 'Business':
+        return [
+          { name: 'Business Hub', path: '/business', icon: MdBusinessCenter },
+          { name: 'E-Waste Centers', path: '/e-waste', icon: MdRestore },
+          { name: 'AI Assistant', path: '/ai-chat', icon: MdSmartToy },
+        ];
+      case 'Vendor':
+        return [
+          { name: 'Marketplace', path: '/vendor', icon: MdStorefront },
+          { name: 'E-Waste Centers', path: '/e-waste', icon: MdRestore },
+        ];
+      case 'User':
+      default:
+        return [
+          { name: 'Dashboard', path: '/', icon: MdDashboard },
+          { name: 'Report Waste', path: '/report', icon: MdDeleteOutline },
+          { name: 'Request Pickup', path: '/pickup', icon: MdLocalShipping },
+          { name: 'E-Waste Centers', path: '/e-waste', icon: MdRestore },
+          { name: 'AI Assistant', path: '/ai-chat', icon: MdSmartToy },
+        ];
+    }
+  };
+
+  const menuItems = getMenuItems();
 
   return (
     <>
@@ -73,35 +95,34 @@ export default function Sidebar({ currentPath, closeMobile }) {
 
       {/* Role Toggle & User Profile (Bottom) */}
       <div className="p-4 shrink-0 bg-slate-50/50 border-t border-slate-100">
-        <div className="bg-white rounded-xl p-1.5 shadow-sm border border-slate-100 flex relative mb-4">
-          <div
-            className="absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-emerald-500 rounded-lg shadow-sm transition-transform duration-300 ease-out z-0"
-            style={{ transform: isAdmin ? 'translateX(calc(100% + 4px))' : 'translateX(0)' }}
-          />
-          <button
-            onClick={() => setRole('User')}
-            className={`flex-1 flex justify-center items-center py-2 text-xs font-bold rounded-lg relative z-10 transition-colors ${!isAdmin ? 'text-white' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            User
-          </button>
-          <button
-            onClick={() => setRole('Admin')}
-            className={`flex-1 flex justify-center items-center py-2 text-xs font-bold rounded-lg relative z-10 transition-colors ${isAdmin ? 'text-white' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            Admin
-          </button>
+        
+        {/* Role Selector Grid */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {['User', 'Admin', 'Business', 'Vendor'].map(r => (
+            <button
+              key={r}
+              onClick={() => setRole(r)}
+              className={`py-1.5 text-[11px] font-bold rounded-lg transition-colors border ${
+                role === r 
+                  ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm' 
+                  : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
+              }`}
+            >
+              {r}
+            </button>
+          ))}
         </div>
 
         <div className="flex items-center gap-3 px-2">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-100 to-blue-50 flex items-center justify-center border border-blue-200 text-blue-600 font-bold text-sm shadow-sm">
-            {isAdmin ? 'A' : 'U'}
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-100 to-blue-50 flex items-center justify-center border border-blue-200 text-blue-600 font-bold text-sm shadow-sm shrink-0">
+            {role.charAt(0)}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-slate-800 truncate">{isAdmin ? 'Admin Console' : 'Ritesh Jadhav'}</p>
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate">{isAdmin ? 'System Admin' : 'Citizen'}</p>
+            <p className="text-sm font-bold text-slate-800 truncate">{user?.name}</p>
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate">{user?.type}</p>
           </div>
           {/* Mock logout button */}
-          <button className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors">
+          <button className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors shrink-0">
             <MdLogout size={16} />
           </button>
         </div>

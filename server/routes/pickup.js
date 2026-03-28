@@ -11,4 +11,10 @@ router.get('/pickup-requests', pickupController.getAllRequests);
 // PATCH /api/pickup-requests/:id — Update pickup request status
 router.patch('/pickup-requests/:id', pickupController.updateRequest);
 
+// POST /api/pickup-requests/:id/bid — Submit a bid for a bulk request (Vendor Role)
+router.post('/pickup-requests/:id/bid', pickupController.submitBid);
+
+// POST /api/pickup-requests/:id/accept-bid — Accept a vendor bid (Business Role)
+router.post('/pickup-requests/:id/accept-bid', pickupController.acceptBid);
+
 module.exports = router;

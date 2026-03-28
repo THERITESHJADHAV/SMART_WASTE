@@ -97,3 +97,9 @@ typings/
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# ML Service — generated files
+ml_service/model.pkl
+ml_service/training_data.csv
+ml_service/model_meta.json
+ml_service/__pycache__/

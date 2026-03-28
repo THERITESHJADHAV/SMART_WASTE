@@ -39,7 +39,13 @@ export const requestPickup = (data) => api.post('/request-pickup', data);
 export const getPickupRequests = () => api.get('/pickup-requests');
 
 /** Update a pickup request status */
-export const updatePickupStatus = (id, status) => api.patch(`/pickup-requests/${id}`, { status });
+export const updatePickupStatus = (id, status, assignedVendor) => api.patch(`/pickup-requests/${id}`, { status, assignedVendor });
+
+/** Submit a bid for a bulk request */
+export const submitBid = (id, vendorName, amount) => api.post(`/pickup-requests/${id}/bid`, { vendorName, amount });
+
+/** Accept a vendor bid */
+export const acceptBid = (id, bidId) => api.post(`/pickup-requests/${id}/accept-bid`, { bidId });
 
 // ============================================================
 // E-WASTE CENTERS
@@ -71,5 +77,16 @@ export const healthCheck = () => api.get('/health');
 /** Send a message (and optional image) to the AI chatbot */
 export const sendChatMessage = (message, imageBase64) =>
   api.post('/chat', { message, imageBase64 });
+
+// ============================================================
+// ML PREDICTIONS
+// ============================================================
+
+/** Get garbage intensity predictions for given time */
+export const getPredictions = (targetHour, targetDay) =>
+  api.post('/predict-heatmap', { target_hour: targetHour, target_day: targetDay });
+
+/** Check if ML service is running */
+export const getMLHealth = () => api.get('/ml-health');
 
 export default api;
